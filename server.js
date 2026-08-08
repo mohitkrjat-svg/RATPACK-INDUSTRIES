@@ -21,10 +21,10 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.log("DB Connection Error: ", err));
 
 // --- Mongoose Models Import ---
-const Show = require('./models/Show');
-const Episode = require('./models/Episode');
-const Founder = require('./models/Founder');
-const User = require('./models/User'); // NAYA USER MODEL
+const Show = require('./models/show');
+const Episode = require('./models/episode');
+const Founder = require('./models/founder');
+const User = require('./models/user'); // NAYA USER MODEL
 
 // --- DEFAULT ADMIN CREATE KARNA (Agar DB khali hai) ---
 mongoose.connection.once('open', async () => {
