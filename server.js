@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URI)
 // --- Mongoose Models Import ---
 const Show = require('./models/show');
 const Episode = require('./models/episode');
-const Founder = require('./models/Founder');
+const Founder = require('./models/founder');
 const User = require('./models/user'); // NAYA USER MODEL
 
 // --- DEFAULT ADMIN CREATE KARNA (Agar DB khali hai) ---
