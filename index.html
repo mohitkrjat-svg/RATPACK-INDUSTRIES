@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratpack Industries — Stream Like a Rodent on Red Bull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- Video.js Player CSS -->
+<link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#0a0a0d;
+    --bg-alt:#131218;
+    --bg-card:#17161f;
+    --cyan:#4deeea;
+    --pink:#ff3ea5;
+    --yellow:#f5ff3d;
+    --purple:#9b5de5;
+    --text:#f5f5f7;
+    --muted:#9a9aae;
+    --line:rgba(245,245,247,0.09);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Sora', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1240px; margin:0 auto; padding:0 32px;}
+  h1,h2,h3,.display{font-family:'Anton', sans-serif; text-transform:uppercase; letter-spacing:0.5px; line-height:0.95;}
+  .mono{font-family:'JetBrains Mono', monospace; letter-spacing:0.08em; text-transform:uppercase;}
+  ::selection{background:var(--pink); color:#000;}
+
+  /* background texture */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 15% 8%, rgba(255,62,165,0.10), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 90% 15%, rgba(77,238,234,0.09), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 95%, rgba(155,93,229,0.10), transparent 60%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:100;
+    background:rgba(10,10,13,0.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; height:76px;}
+  .logo{display:flex; align-items:center; gap:10px; font-family:'Anton'; font-size:22px; text-transform:uppercase;}
+  .logo .icon{
+    width:34px; height:34px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #2a2a35, #0a0a0d 70%);
+    border:2px solid var(--pink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    box-shadow:0 0 14px rgba(255,62,165,0.55);
+  }
+  .logo span.hi{color:var(--cyan);}
+  .navlinks{display:flex; gap:36px; align-items:center;}
+  .navlinks a{
+    font-family:'JetBrains Mono'; font-size:12.5px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--muted); transition:color 0.2s;
+    position:relative; padding:4px 0;
+  }
+  .navlinks a:hover{color:var(--text);}
+  .navlinks a::after{
+    content:""; position:absolute; left:0; bottom:-2px; width:0; height:2px;
+    background:var(--pink); transition:width 0.25s;
+  }
+  .navlinks a:hover::after{width:100%;}
+  .btn-join{
+    background:var(--yellow); color:#0a0a0d; font-family:'JetBrains Mono'; font-weight:700;
+    font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase;
+    padding:10px 20px; border-radius:3px; box-shadow:0 0 0 rgba(245,255,61,0);
+    transition:box-shadow 0.25s, transform 0.2s; cursor:pointer;
+  }
+  .btn-join:hover{box-shadow:0 0 24px rgba(245,255,61,0.5); transform:translateY(-1px);}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    position:relative; padding:110px 0 90px; overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-rings{
+    position:absolute; top:50%; right:-180px; transform:translateY(-50%);
+    width:560px; height:560px; z-index:0; opacity:0.55;
+  }
+  .ring{
+    position:absolute; border-radius:50%; border:2px solid var(--cyan);
+    top:50%; left:50%; opacity:0.5;
+  }
+  .ring.r1{width:560px; height:560px; margin:-280px 0 0 -280px; animation:spin 40s linear infinite; border-color:var(--pink);}
+  .ring.r2{width:400px; height:400px; margin:-200px 0 0 -200px; animation:spin 30s linear infinite reverse; border-color:var(--cyan); border-style:dashed;}
+  .ring.r3{width:260px; height:260px; margin:-130px 0 0 -130px; animation:spin 22s linear infinite; border-color:var(--purple);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono'; font-size:12px; letter-spacing:0.15em;
+    color:var(--yellow); border:1px solid rgba(245,255,61,0.35);
+    padding:6px 14px; border-radius:999px; margin-bottom:28px;
+    background:rgba(245,255,61,0.06);
+  }
+  .eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--yellow); box-shadow:0 0 8px var(--yellow); animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.25;}}
+
+  .hero h1{
+    font-size:clamp(46px, 8vw, 96px);
+    max-width:820px; position:relative; z-index:1;
+  }
+  .hero h1 .glitch{
+    color:var(--bg); -webkit-text-stroke:2px var(--cyan);
+    display:inline-block; position:relative;
+  }
+  .hero h1 .fill{color:var(--pink);}
+  .hero p.sub{
+    font-size:18px; color:var(--muted); max-width:480px; margin:26px 0 38px;
+    line-height:1.6; position:relative; z-index:1;
+  }
+  .hero-ctas{display:flex; gap:16px; position:relative; z-index:1; flex-wrap:wrap;}
+  .btn-primary{
+    background:var(--pink); color:#0a0a0d; font-family:'JetBrains Mono'; font-weight:700;
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase;
+    padding:15px 28px; border-radius:3px; transition:transform 0.2s, box-shadow 0.25s; cursor:pointer;
+    border: none;
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,62,165,0.35);}
+  .btn-ghost{
+    border:1px solid var(--line); color:var(--text); font-family:'JetBrains Mono'; font-weight:500;
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase;
+    padding:15px 28px; border-radius:3px; transition:border-color 0.2s, background 0.2s; cursor:pointer;
+  }
+  .btn-ghost:hover{border-color:var(--cyan); background:rgba(77,238,234,0.06);}
+
+  .hero-stats{display:flex; gap:42px; margin-top:64px; position:relative; z-index:1; flex-wrap:wrap;}
+  .hero-stats div{border-left:2px solid var(--line); padding-left:14px;}
+  .hero-stats .num{font-family:'Anton'; font-size:30px; color:var(--cyan);}
+  .hero-stats .lbl{font-family:'JetBrains Mono'; font-size:11px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:2px;}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee-band{
+    background:var(--pink); color:#0a0a0d; overflow:hidden; white-space:nowrap;
+    padding:12px 0; border-bottom:1px solid var(--line); position:relative;
+  }
+  .marquee-track{display:inline-block; animation:scroll 26s linear infinite;}
+  .marquee-track span{font-family:'Anton'; font-size:18px; margin:0 26px; text-transform:uppercase;}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+  /* ---------- SECTION HEADERS ---------- */
+  section{padding:100px 0; position:relative; z-index:1;}
+  .sec-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:48px; flex-wrap:wrap; gap:20px;}
+  .sec-head .tag{font-family:'JetBrains Mono'; font-size:12px; color:var(--cyan); letter-spacing:0.15em; margin-bottom:10px; display:block;}
+  .sec-head h2{font-size:clamp(30px,4.5vw,48px);}
+  .sec-head p{color:var(--muted); max-width:360px; font-size:14.5px; line-height:1.6;}
+
+  /* ---------- SHOWS GRID ---------- */
+  .shows-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;}
+  .show-card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:8px; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s; cursor:pointer;
+  }
+  .show-card:hover{transform:translateY(-6px); border-color:var(--pink);}
+  .show-thumb{
+    height:190px; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:15px; text-align:center; padding:14px; position:relative;
+    text-transform:uppercase; line-height:1.15;
+  }
+  .show-thumb::after{
+    content:attr(data-genre); position:absolute; top:10px; left:10px;
+    font-family:'JetBrains Mono'; font-size:9.5px; background:rgba(0,0,0,0.5);
+    padding:4px 8px; border-radius:3px; letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .show-info{padding:16px;}
+  .show-info h4{font-family:'Sora'; font-weight:700; font-size:14.5px; margin-bottom:4px;}
+  .show-info span{font-family:'JetBrains Mono'; font-size:11px; color:var(--muted);}
+
+  /* ---------- WHEEL SECTION ---------- */
+  .wheel-section{background:var(--bg-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .wheel-layout{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;}
+  .wheel-stage{position:relative; width:100%; aspect-ratio:1/1; max-width:460px; margin:0 auto;}
+  .wheel-hub{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:90px; height:90px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #2a2a35, #0a0a0d 70%);
+    border:2px solid var(--yellow); display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:11px; text-align:center; z-index:3;
+    box-shadow:0 0 30px rgba(245,255,61,0.35);
+  }
+  .wheel-rim{
+    position:absolute; inset:0; border-radius:50%; border:3px solid var(--cyan);
+    animation:spin 50s linear infinite; box-shadow:inset 0 0 40px rgba(77,238,234,0.15);
+  }
+  .wheel-spoke{
+    position:absolute; inset:0; border-radius:50%;
+    animation:spin 50s linear infinite;
+  }
+  .genre-pod{
+    position:absolute; width:118px; padding:10px 12px; border-radius:6px;
+    background:var(--bg-card); border:1px solid var(--line); text-align:center;
+    font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    animation:counterspin 50s linear infinite;
+  }
+  @keyframes counterspin{from{transform:rotate(0deg);} to{transform:rotate(-360deg);}}
+  .pod1{top:-4%; left:50%; margin-left:-59px; border-color:var(--pink); color:var(--pink);}
+  .pod2{top:22%; right:-8%; border-color:var(--cyan); color:var(--cyan);}
+  .pod3{bottom:22%; right:-8%; border-color:var(--yellow); color:var(--yellow);}
+  .pod4{bottom:-4%; left:50%; margin-left:-59px; border-color:var(--purple); color:var(--purple);}
+  .pod5{bottom:22%; left:-8%; border-color:var(--cyan); color:var(--cyan);}
+  .pod6{top:22%; left:-8%; border-color:var(--pink); color:var(--pink);}
+
+  .wheel-copy .tag{font-family:'JetBrains Mono'; font-size:12px; color:var(--yellow); letter-spacing:0.15em; margin-bottom:14px; display:block;}
+  .wheel-copy h2{font-size:clamp(28px,4vw,42px); margin-bottom:18px;}
+  .wheel-copy p{color:var(--muted); line-height:1.7; margin-bottom:14px; max-width:440px;}
+
+  /* ---------- FOUNDERS ---------- */
+  .founders-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:18px;}
+  .founder-card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:10px;
+    padding:26px 18px 22px; text-align:center; position:relative; overflow:hidden;
+    transition:transform 0.3s, border-color 0.3s;
+  }
+  .founder-card:hover{transform:translateY(-8px); border-color:var(--fc, var(--pink));}
+  .founder-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--fc, var(--pink));
+  }
+  .avatar{
+    width:96px; height:96px; border-radius:50%; margin:0 auto 18px;
+    background:radial-gradient(circle at 32% 28%, rgba(255,255,255,0.14), transparent 55%), var(--fc, var(--pink));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Anton'; font-size:34px; color:#0a0a0d;
+    box-shadow:0 0 0 4px var(--bg-card), 0 0 0 5px var(--fc, var(--pink)), 0 8px 30px rgba(0,0,0,0.4);
+    position:relative;
+  }
+  .avatar .glyph{font-size:38px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3));}
+  .founder-card h4{font-family:'Anton'; font-size:19px; text-transform:uppercase; margin-bottom:4px;}
+  .founder-card .role{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--fc, var(--pink)); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px;}
+  .founder-card .bio{font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:16px; min-height:78px;}
+  .founder-stat{
+    font-family:'JetBrains Mono'; font-size:10.5px; border-top:1px solid var(--line);
+    padding-top:12px; color:var(--text); display:flex; justify-content:space-between;
+  }
+  .founder-stat b{color:var(--fc, var(--pink));}
+
+  /* ---------- CTA BAND ---------- */
+  .cta-band{
+    background:linear-gradient(120deg, rgba(255,62,165,0.12), rgba(77,238,234,0.1));
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    text-align:center; padding:90px 0;
+  }
+  .cta-band h2{font-size:clamp(32px,6vw,64px); margin-bottom:20px;}
+  .cta-band p{color:var(--muted); margin-bottom:34px; font-size:16px;}
+
+  /* ---------- AUTH & VIDEO MODALS ---------- */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(10,10,13,0.9); backdrop-filter: blur(5px);
+    display: none; justify-content: center; align-items: center; z-index: 9999;
+  }
+  .auth-modal {
+    background: var(--bg-card); width: 100%; max-width: 400px;
+    padding: 32px; border-radius: 8px; border: 1px solid var(--line);
+    position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .close-modal {
+    position: absolute; top: 16px; right: 16px; background: transparent;
+    border: none; color: var(--muted); font-size: 24px; cursor: pointer;
+  }
+  .close-modal:hover { color: var(--pink); }
+  .auth-tabs { display: flex; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .auth-tab {
+    background: transparent; border: none; color: var(--muted); font-family: 'JetBrains Mono';
+    font-size: 14px; cursor: pointer; text-transform: uppercase; transition: 0.2s;
+  }
+  .auth-tab.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); }
+  .auth-form input {
+    width: 100%; padding: 14px; margin-bottom: 16px; background: var(--bg);
+    border: 1px solid var(--line); color: var(--text); border-radius: 4px;
+    font-family: 'Sora'; outline: none; transition: 0.2s;
+  }
+  .auth-form input:focus { border-color: var(--pink); }
+  .auth-btn {
+    width: 100%; background: var(--pink); color: #0a0a0d; border: none;
+    padding: 14px; font-family: 'JetBrains Mono'; font-weight: bold;
+    text-transform: uppercase; border-radius: 4px; cursor: pointer;
+  }
+
+  footer{padding:60px 0 40px;}
+  .foot-top{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:40px; margin-bottom:40px;}
+  .foot-links{display:flex; gap:60px; flex-wrap:wrap;}
+  .foot-col h5{font-family:'JetBrains Mono'; font-size:11px; letter-spacing:0.12em; color:var(--muted); margin-bottom:14px; text-transform:uppercase;}
+  .foot-col a{display:block; font-size:13.5px; color:var(--text); margin-bottom:10px; opacity:0.8; transition:opacity 0.2s;}
+  .foot-col a:hover{opacity:1; color:var(--pink);}
+  .foot-bottom{border-top:1px solid var(--line); padding-top:24px; display:flex; justify-content:space-between; color:var(--muted); font-family:'JetBrains Mono'; font-size:11px; flex-wrap:wrap; gap:10px;}
+
+  @media (max-width:960px){
+    .navlinks{display:none;}
+    .shows-grid{grid-template-columns:repeat(2,1fr);}
+    .founders-grid{grid-template-columns:repeat(2,1fr);}
+    .wheel-layout{grid-template-columns:1fr;}
+    .hero-rings{display:none;}
+  }
+  @media (max-width:520px){
+    .shows-grid{grid-template-columns:1fr;}
+    .founders-grid{grid-template-columns:1fr;}
+    .wrap{padding:0 20px;}
+    .hero-stats{gap:26px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="icon">🐹</span>RATPACK <span class="hi">IND.</span></div>
+    <div class="navlinks">
+      <a href="#shows">Shows</a>
+      <a href="#genres">Genres</a>
+      <a href="#founders">Founders</a>
+      <a href="#join">Pricing</a>
+    </div>
+    <button class="btn-join">Start Free</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-rings">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+  </div>
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span> NOW LIVE — SEASON 1 OF THE BURROW DROPS FRIDAY</div>
+    <h1>BINGE LIKE A<br><span class="glitch">RODENT</span> ON <span class="fill">RED BULL</span></h1>
+    <p class="sub">Original shows, unhinged documentaries, and a comedy slate built by a crew that never sleeps. This is Ratpack Industries — streaming with teeth.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary">Start Streaming — ₹149/mo</button>
+      <a href="#founders" class="btn-ghost" style="display:inline-flex; align-items:center; justify-content:center;">Meet the Crew</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="num">240+</div><div class="lbl">Originals</div></div>
+      <div><div class="num">18</div><div class="lbl">Countries</div></div>
+      <div><div class="num">4K</div><div class="lbl">HDR Streaming</div></div>
+      <div><div class="num">0</div><div class="lbl">Chill Vibes</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="marquee-band">
+  <div class="marquee-track">
+    <span>★ THE BURROW</span><span>★ HUSTLE CITY</span><span>★ MIDNIGHT WHEEL</span><span>★ COIN RUN</span><span>★ SCRAPPY &amp; CO</span><span>★ NEON DYNASTY</span>
+    <span>★ THE BURROW</span><span>★ HUSTLE CITY</span><span>★ MIDNIGHT WHEEL</span><span>★ COIN RUN</span><span>★ SCRAPPY &amp; CO</span><span>★ NEON DYNASTY</span>
+  </div>
+</div>
+
+<section id="shows">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">// NOW STREAMING</span>
+        <h2>Fresh off<br>the wheel</h2>
+      </div>
+      <p>New drops every Friday. Comedy, docs, and drama, all with a little chaos baked in.</p>
+    </div>
+    <div class="shows-grid">
+      <!-- Dynamic shows will be loaded here from backend database -->
+    </div>
+  </div>
+</section>
+
+<section id="genres" class="wheel-section">
+  <div class="wrap wheel-layout">
+    <div class="wheel-stage">
+      <div class="wheel-rim"></div>
+      <div class="wheel-hub">GENRE<br>WHEEL</div>
+      <div class="wheel-spoke">
+        <div class="genre-pod pod1">Comedy</div>
+        <div class="genre-pod pod2">Drama</div>
+        <div class="genre-pod pod3">Docu</div>
+        <div class="genre-pod pod4">Sci-Fi</div>
+        <div class="genre-pod pod5">Sports</div>
+        <div class="genre-pod pod6">Thriller</div>
+      </div>
+    </div>
+    <div class="wheel-copy">
+      <span class="tag">// HOW WE PROGRAM</span>
+      <h2>We run the wheel<br>so you don't have to</h2>
+      <p>No endless scrolling. Every category on Ratpack spins straight from our writers' room — pick a lane, hop on, and we'll queue up what's fresh in it.</p>
+      <p>The wheel keeps turning 24/7, exactly like the one bolted to our office wall since day one.</p>
+      <a href="#shows" class="btn-ghost" style="display:inline-block; margin-top:10px;">Browse All Genres</a>
+    </div>
+  </div>
+</section>
+
+<section id="founders">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="tag">// MEET THE CREW</span>
+        <h2>The founders</h2>
+      </div>
+      <p>Five people, one wheel, zero chill. This is who's actually running Ratpack Industries.</p>
+    </div>
+    
+    <!-- JS apne aap saare cards is grid ke andar daal dega -->
+    <div class="founders-grid" id="dynamic-founders-grid">
+      
+    </div>
+    
+  </div>
+</section>
+<section id="join" class="cta-band">
+  <div class="wrap">
+    <h2>Jump on the wheel</h2>
+    <p>One plan, every show, cancel whenever. First week's on us.</p>
+    <button class="btn-primary" style="padding:18px 40px; font-size:14px;">Start Your Free Week</button>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="logo"><span class="icon">🐹</span>RATPACK <span class="hi">IND.</span></div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h5>Watch</h5>
+          <a href="#shows">Shows</a>
+          <a href="#genres">Genres</a>
+          <a href="#">New Releases</a>
+        </div>
+        <div class="foot-col">
+          <h5>Company</h5>
+          <a href="#founders">Founders</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+        </div>
+        <div class="foot-col">
+          <h5>Support</h5>
+          <a href="#">Help Center</a>
+          <a href="#">Devices</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 RATPACK INDUSTRIES. ALL RIGHTS RESERVED.</span>
+      <span>TERMS · PRIVACY · COOKIES</span>
+    </div>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <button class="close-modal" onclick="closeAuth()">×</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    
+    <!-- Login Form -->
+    <form class="auth-form" id="loginForm" onsubmit="handleAuth(event, 'login')">
+      <input type="email" id="loginEmail" placeholder="Email Address" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <div style="text-align: right; margin-bottom: 16px;">
+        <a href="#" onclick="showForgotForm(event)" style="font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono';">Forgot Password?</a>
+      </div>
+      <button type="submit" class="auth-btn">Enter The Burrow</button>
+    </form>
+
+    <!-- Signup Form -->
+    <form class="auth-form" id="signupForm" style="display: none;" onsubmit="handleAuth(event, 'register')">
+      <input type="text" id="signupName" placeholder="Display Name" required>
+      <input type="email" id="signupEmail" placeholder="Email Address" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <button type="submit" class="auth-btn" style="background: var(--cyan);">Join Ratpack</button>
+    </form>
+
+    <!-- Forgot Password Form -->
+    <form class="auth-form" id="forgotForm" style="display: none;" onsubmit="handleForgot(event)">
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px; font-family: 'JetBrains Mono';">Enter your registered email and we'll send you reset instructions.</p>
+      <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+      <button type="submit" class="auth-btn" style="background: var(--yellow); color: #0a0a0d;">Send Reset Link</button>
+      <div style="text-align: center; margin-top: 12px;">
+        <a href="#" onclick="switchTab('login')" style="font-size: 11px; color: var(--cyan); font-family: 'JetBrains Mono';">Back to Login</a>
+      </div>
+    </form>
+
+    <!-- Naya Password Set Karne ka Form (Reset Password Form) -->
+    <form class="auth-form" id="resetPasswordForm" style="display: none;" onsubmit="handleResetSubmit(event)">
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px; font-family: 'JetBrains Mono';">Apna naya password yahan enter karein.</p>
+      <input type="password" id="newPassword" placeholder="Naya Password" required>
+      <button type="submit" class="auth-btn" style="background: var(--cyan); color: #0a0a0d;">Password Update Karein</button>
+    </form>
+  </div>
+</div>
+
+<!-- VIDEO PLAYER MODAL -->
+<div class="modal-overlay" id="videoModal" style="display: none; flex-direction: column; background: rgba(0,0,0,0.95); justify-content: center; align-items: center;">
+  <button onclick="closePlayer()" style="position: absolute; top: 20px; right: 30px; font-size: 40px; color: white; background: none; border: none; cursor: pointer; z-index: 10000;">×</button>
+  <div style="width: 90%; max-width: 900px; background: black; box-shadow: 0 0 50px rgba(77,238,234,0.2);">
+    <video id="ratpack-player" class="video-js vjs-big-play-centered" controls preload="auto" style="width: 100%;">
+    <!-- Yahan se source tag hata diya gaya hai -->
+</video>
+  </div>
+</div>
+
+<!-- Video.js Player JS -->
+<script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+
+<script>
+ // --- 1. BACKEND SE SHOWS LAANE KA CODE ---
+const API_BASE_URL = 'http://localhost:5000/api';
+
+async function loadShows() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/shows`);
+    const shows = await response.json();
+    const showsContainer = document.querySelector('.shows-grid');
+    
+    if(shows.length > 0 && showsContainer) {
+      showsContainer.innerHTML = ''; 
+      shows.forEach(show => {
+        let displayTitle = show.title.replace(' ', '<br>');
+        
+        // Yahan onclick par hum fetchEpisodes ko call kar rahe hain
+        const showCard = `
+          <div class="show-card" onclick="fetchEpisodes('${show.id}', '${show.title.replace(/'/g, "\\'")}')">
+            <div class="show-thumb" data-genre="${show.genre}" style="background:${show.thumb_color || 'var(--pink)'}; text-transform:uppercase;">
+              ${displayTitle}
+            </div>
+            <div class="show-info">
+              <h4>${show.title}</h4>
+              <span>${show.genre} · ${show.status}</span>
+            </div>
+          </div>
+        `;
+        showsContainer.innerHTML += showCard;
+      });
+    }
+  } catch (error) {
+    console.error("Backend connect nahi ho paya.", error);
+  }
+}
+
+// --- 2. KISI SHOW KE EPISODES LAANE KA CODE ---
+async function fetchEpisodes(showId, showTitle) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/shows/${showId}/episodes`);
+    const episodes = await response.json();
+    console.log(`${showTitle} ke Episodes:`, episodes);
+
+    let episodeContainer = document.getElementById('episodes-list');
+    
+    // Agar HTML mein episodes-list div nahi hai, toh JS se automatically bana do
+    if (!episodeContainer) {
+      const showsGrid = document.querySelector('.shows-grid');
+      episodeContainer = document.createElement('div');
+      episodeContainer.id = 'episodes-list';
+      episodeContainer.style = 'margin-top: 40px; width: 100%;';
+      showsGrid.parentNode.insertBefore(episodeContainer, showsGrid.nextSibling);
+    }
+
+    episodeContainer.innerHTML = `<h3 style="margin-bottom: 20px; font-family: 'Anton', sans-serif; font-size: 24px; color: var(--cyan);">EPISODES: ${showTitle.toUpperCase()}</h3>`;
+    
+    if (episodes.length === 0) {
+      episodeContainer.innerHTML += '<p style="color: var(--muted); font-family: \'JetBrains Mono\';">No episodes uploaded yet.</p>';
+      return;
+    }
+
+    // Har episode ka button banao
+    episodes.forEach(ep => {
+      const epBtn = document.createElement('button');
+      epBtn.style = 'display: block; width: 100%; text-align: left; background: var(--bg-card); color: white; border: 1px solid var(--line); padding: 18px; margin-bottom: 12px; cursor: pointer; border-radius: 8px; font-family: "Sora", sans-serif; font-size: 15px; transition: 0.2s;';
+      
+      // Hover effect JS ke through
+      epBtn.onmouseover = () => epBtn.style.borderColor = 'var(--cyan)';
+      epBtn.onmouseout = () => epBtn.style.borderColor = 'var(--line)';
+
+      epBtn.innerText = `▶ Season ${ep.season} Episode ${ep.ep_number}: ${ep.title}`;
+      
+      // Jab episode pe click ho
+      epBtn.onclick = () => {
+        if (ep.video_url) {
+          playVideo(ep.video_url);
+        } else {
+          alert("Video file missing hai! Admin panel check karo.");
+        }
+      };
+      
+      episodeContainer.appendChild(epBtn);
+    });
+
+    // List aane par thoda smooth scroll kara do
+    episodeContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (error) {
+    console.error("Episodes fetch karne mein error:", error);
+  }
+}
+
+// --- 3. VIDEO.JS SE NAYI VIDEO CHALANE KA FUNCTION ---
+function playVideo(videoUrl) {
+  // Tera original AUTH check - Bina login video nahi chalegi!
+  const userStr = localStorage.getItem('ratpackUser');
+  if (!userStr) {
+    alert("Bhai, pehle login ya signup karo stream karne ke liye!");
+    openAuth();
+    return;
+  }
+
+  document.getElementById('videoModal').style.display = 'flex';
+  let player = videojs.getPlayer('ratpack-player');
+  
+  if (!player) {
+    player = videojs('ratpack-player', { fluid: true });
+  }
+  
+  // Naya video link daalo (.mp4 format ke hisaab se) aur play karo
+  player.src({ type: 'video/mp4', src: videoUrl });
+  player.play();
+}
+
+function closePlayer() {
+  document.getElementById('videoModal').style.display = 'none';
+  let player = videojs.getPlayer('ratpack-player');
+  if (player) {
+    player.pause(); 
+  }
+}
+
+// Page load hote hi shows le aao
+window.onload = () => {
+  loadShows();
+};
+
+
+// ==========================================================
+// --- 4. AUTH SYSTEM LOGIC (MODAL) (TERA PURANA CODE SAME HAI) ---
+// ==========================================================
+
+function openAuth() { document.getElementById('authModal').style.display = 'flex'; }
+function closeAuth() { document.getElementById('authModal').style.display = 'none'; }
+
+function switchTab(tab) {
+  document.getElementById('forgotForm').style.display = 'none';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  if(tab === 'login') {
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('tab-login').classList.add('active');
+    document.getElementById('tab-signup').classList.remove('active');
+  } else {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'block';
+    document.getElementById('tab-signup').classList.add('active');
+    document.getElementById('tab-login').classList.remove('active');
+  }
+}
+
+function showForgotForm(e) {
+  e.preventDefault();
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  document.getElementById('forgotForm').style.display = 'block';
+  document.getElementById('tab-login').classList.remove('active');
+  document.getElementById('tab-signup').classList.remove('active');
+}
+
+// --- 5. LOGIN/SIGNUP SUBMIT KARNA ---
+async function handleAuth(event, type) {
+  event.preventDefault(); 
+  
+  let payload = {};
+  if(type === 'login') {
+    payload.email = document.getElementById('loginEmail').value;
+    payload.password = document.getElementById('loginPassword').value;
+  } else {
+    payload.name = document.getElementById('signupName').value;
+    payload.email = document.getElementById('signupEmail').value;
+    payload.password = document.getElementById('signupPassword').value;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/auth/${type}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if(response.ok) {
+      alert(`Success! Welcome to Ratpack, ${data.user.name}`);
+      
+      localStorage.setItem('ratpackToken', data.token); 
+      localStorage.setItem('ratpackUser', JSON.stringify(data.user));
+      
+      document.getElementById('loginForm').reset();
+      document.getElementById('signupForm').reset();
+      
+      checkLoginState();
+      closeAuth();
+    } else {
+      alert('Error: ' + data.msg); 
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Backend se connect nahi ho paya.');
+  }
+}
+
+// --- FORGOT PASSWORD SUBMIT LOGIC ---
+async function handleForgot(event) {
+  event.preventDefault();
+  const email = document.getElementById('forgotEmail').value;
+
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(data.msg);
+      document.getElementById('forgotForm').reset();
+      switchTab('login');
+    } else {
+      alert('Error: ' + data.msg);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Backend se connect nahi ho paya.');
+  }
+}
+
+// --- URL SE TOKEN NIKAL KAR RESET FORM KHOLNE KA LOGIC ---
+let activeResetToken = '';
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    activeResetToken = token;
+    document.getElementById('authModal').style.display = 'flex';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('forgotForm').style.display = 'none';
+    document.getElementById('resetPasswordForm').style.display = 'block';
+  }
+});
+
+// --- NAYA PASSWORD BACKEND PAR BHEJNE KA LOGIC ---
+async function handleResetSubmit(event) {
+  event.preventDefault();
+  const newPassword = document.getElementById('newPassword').value;
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/auth/reset-password/${activeResetToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert(data.msg);
+      window.location.href = 'index.html'; 
+    } else {
+      alert('Error: ' + data.msg);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Server se connect nahi ho paya.');
+  }
+}
+
+// --- 6. LOGIN HONE KE BAAD UI UPDATE KARNA (LOGOUT SUPPORT) ---
+function checkLoginState() {
+  const userStr = localStorage.getItem('ratpackUser');
+  if (userStr) {
+    const user = JSON.parse(userStr);
+    
+    const navBtn = document.querySelector('.btn-join');
+    if (navBtn) {
+      navBtn.textContent = 'Hi, ' + user.name.split(' ')[0]; 
+      navBtn.style.background = 'transparent';
+      navBtn.style.color = 'var(--cyan)';
+      navBtn.style.boxShadow = 'none';
+      navBtn.onclick = null; 
+    }
+
+    const navLinksDiv = document.querySelector('.navlinks');
+    if (navLinksDiv && !document.getElementById('logout-btn')) {
+      const logoutBtn = document.createElement('a');
+      logoutBtn.id = 'logout-btn';
+      logoutBtn.href = '#';
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.style.color = 'var(--pink)';
+      logoutBtn.onclick = (e) => {
+          e.preventDefault();
+          localStorage.removeItem('ratpackToken');
+          localStorage.removeItem('ratpackUser');
+          window.location.reload(); 
+      };
+      navLinksDiv.appendChild(logoutBtn);
+    }
+
+    document.querySelectorAll('.btn-primary').forEach(btn => {
+      btn.textContent = 'Continue Watching';
+      btn.onclick = () => window.location.href = '#shows'; 
+    });
+  }
+}
+checkLoginState();
+
+// --- 7. START FREE BUTTONS KO POPUP SE JODNA ---
+document.querySelectorAll('.btn-join, .btn-primary').forEach(btn => {
+    if (!btn.textContent.includes('Hi,') && btn.textContent !== 'Continue Watching') {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            openAuth();
+        };
+    }
+});
+// --- BACKEND SE FOUNDERS LAANE KA NAYA CODE ---
+async function loadFrontFounders() {
+  try {
+    // API URL: Apne backend port (5000) ka dhyaan rakhna
+    const response = await fetch('http://localhost:5000/api/founders');
+    const founders = await response.json();
+    
+    // Grid pakdo
+    const grid = document.getElementById('dynamic-founders-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = ''; // Box khali karo
+
+    if (founders.length === 0) {
+        grid.innerHTML = '<p style="color: var(--muted);">Abhi koi founder add nahi hua hai.</p>';
+        return;
+    }
+
+    // Tere cool emojis ki ek list (Naye founders ko automatically assign hone ke liye)
+    const coolEmojis = ['⚡', '🤸', '💪', '🏆', '🛡️', '🔥', '🚀', '🧠'];
+
+    founders.forEach((f, index) => {
+      // Har founder ke liye ek emoji select karo
+      const emoji = coolEmojis[index % coolEmojis.length];
+
+      // YAHAN TERI 100% ORIGINAL DESIGN HAI
+      const card = `
+        <div class="founder-card" style="--fc:${f.color || 'var(--pink)'};">
+          <div class="avatar"><span class="glyph">${emoji}</span></div>
+          <h4>${f.name}</h4>
+          <div class="role">${f.role || ''}</div>
+          <div class="bio">${f.bio || ''}</div>
+          <div class="founder-stat"><span>${f.stat_label || ''}</span><b>${f.stat_value || ''}</b></div>
+        </div>
+      `;
+      grid.innerHTML += card;
+    });
+  } catch (error) {
+    console.error("Founders load error:", error);
+  }
+}
+
+// Ensure karna ki page load hote hi function chal jaye
+// Agar pehle se window.onload hai, toh usme loadFrontFounders() add kar dena
+window.addEventListener('DOMContentLoaded', () => {
+    loadFrontFounders();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratpack Industries — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0d; --bg-alt:#131218; --bg-card:#17161f;
+    --cyan:#4deeea; --pink:#ff3ea5; --yellow:#f5ff3d; --purple:#9b5de5;
+    --text:#f5f5f7; --muted:#9a9aae; --line:rgba(245,245,247,0.09);
+    --danger:#ff5a5a; --ok:#4deeea;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Sora',sans-serif; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.5px;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  input, select, textarea, button{font-family:'Sora',sans-serif;}
+  a{color:inherit;}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,62,165,0.14), transparent 60%), var(--bg);
+    padding:20px;
+  }
+  .login-box{
+    width:100%; max-width:380px; background:var(--bg-card); border:1px solid var(--line);
+    border-radius:12px; padding:38px 32px;
+  }
+  .login-logo{display:flex; align-items:center; gap:10px; font-family:'Anton'; font-size:22px; margin-bottom:8px;}
+  .login-logo .icon{width:34px; height:34px; border-radius:50%; border:2px solid var(--pink); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(255,62,165,0.5);}
+  .login-box h2{font-size:15px; color:var(--muted); font-family:'JetBrains Mono'; letter-spacing:0.1em; margin-bottom:30px; text-transform:uppercase;}
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-family:'JetBrains Mono'; font-size:11px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px;}
+  .field input{
+    width:100%; background:var(--bg-alt); border:1px solid var(--line); color:var(--text);
+    padding:12px 14px; border-radius:6px; font-size:14px; outline:none; transition:border-color 0.2s;
+  }
+  .field input:focus{border-color:var(--pink);}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:none; cursor:pointer; border-radius:6px; font-weight:700;
+    font-family:'JetBrains Mono'; font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:13px 20px; transition:transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--pink); color:#0a0a0d; width:100%;}
+  .btn-primary:hover{box-shadow:0 6px 20px rgba(255,62,165,0.35);}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--cyan);}
+  .btn-danger{background:rgba(255,90,90,0.12); color:var(--danger); border:1px solid rgba(255,90,90,0.3);}
+  .btn-small{padding:8px 14px; font-size:11px;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .error-msg{
+    background:rgba(255,90,90,0.1); border:1px solid rgba(255,90,90,0.35); color:var(--danger);
+    padding:10px 14px; border-radius:6px; font-size:13px; margin-bottom:18px; display:none;
+  }
+  .hint{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--muted); margin-top:18px; line-height:1.6; border-top:1px solid var(--line); padding-top:16px;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none; min-height:100vh; grid-template-columns:230px 1fr;}
+  #app.show{display:grid;}
+  aside{
+    background:var(--bg-alt); border-right:1px solid var(--line); padding:24px 16px;
+    display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  }
+  .side-logo{display:flex; align-items:center; gap:8px; font-family:'Anton'; font-size:17px; padding:8px 10px 26px;}
+  .side-logo .icon{width:26px; height:26px; border-radius:50%; border:2px solid var(--pink); display:flex; align-items:center; justify-content:center; font-size:12px;}
+  nav.sidenav{display:flex; flex-direction:column; gap:2px; flex:1;}
+  nav.sidenav button{
+    display:flex; align-items:center; gap:10px; text-align:left; background:none; border:none;
+    color:var(--muted); font-family:'JetBrains Mono'; font-size:12.5px; letter-spacing:0.05em;
+    text-transform:uppercase; padding:12px 12px; border-radius:6px; cursor:pointer; transition:all 0.15s;
+  }
+  nav.sidenav button:hover{background:rgba(255,255,255,0.04); color:var(--text);}
+  nav.sidenav button.active{background:rgba(255,62,165,0.1); color:var(--pink);}
+  .side-foot{border-top:1px solid var(--line); padding-top:16px; margin-top:16px;}
+  .side-user{font-family:'JetBrains Mono'; font-size:11px; color:var(--muted); margin-bottom:10px; word-break:break-all;}
+
+  main{padding:36px 40px; overflow-y:auto;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:14px;}
+  .page-head h1{font-size:28px;}
+
+  /* Stat cards */
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:36px;}
+  .stat-card{background:var(--bg-card); border:1px solid var(--line); border-radius:10px; padding:20px;}
+  .stat-card .n{font-family:'Anton'; font-size:32px; color:var(--cyan);}
+  .stat-card .l{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px;}
+
+  /* Table */
+  table{width:100%; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  th{background:var(--bg-alt); text-align:left; font-family:'JetBrains Mono'; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:14px 16px;}
+  td{padding:14px 16px; border-top:1px solid var(--line); font-size:13.5px;}
+  tr td:first-child, tr th:first-child{padding-left:20px;}
+  .badge{display:inline-block; padding:4px 10px; border-radius:999px; font-family:'JetBrains Mono'; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;}
+  .badge.published, .badge.active, .badge.ready{background:rgba(77,238,234,0.12); color:var(--cyan);}
+  .badge.draft, .badge.processing{background:rgba(245,255,61,0.12); color:var(--yellow);}
+  .badge.disabled{background:rgba(255,90,90,0.12); color:var(--danger);}
+  .badge.admin{background:rgba(155,93,229,0.15); color:var(--purple);}
+  .row-actions{display:flex; gap:8px;}
+  .icon-btn{background:none; border:1px solid var(--line); color:var(--muted); width:30px; height:30px; border-radius:5px; cursor:pointer; font-size:13px;}
+  .icon-btn:hover{border-color:var(--cyan); color:var(--cyan);}
+  .icon-btn.del:hover{border-color:var(--danger); color:var(--danger);}
+  .empty-state{padding:50px 20px; text-align:center; color:var(--muted); font-size:13.5px;}
+
+  /* Modal */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:200;
+    align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px);
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--bg-card); border:1px solid var(--line); border-radius:12px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; padding:28px;}
+  .modal h3{font-size:19px; margin-bottom:20px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  textarea{width:100%; background:var(--bg-alt); border:1px solid var(--line); color:var(--text); padding:12px 14px; border-radius:6px; font-size:13.5px; resize:vertical; min-height:80px; outline:none;}
+  textarea:focus, select:focus{border-color:var(--pink);}
+  select{width:100%; background:var(--bg-alt); border:1px solid var(--line); color:var(--text); padding:12px 14px; border-radius:6px; font-size:13.5px; outline:none;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
+  .color-row{display:flex; gap:8px; margin-top:6px;}
+  .swatch{width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent;}
+  .swatch.sel{border-color:var(--text);}
+
+  /* Upload */
+  .upload-zone{
+    border:2px dashed var(--line); border-radius:8px; padding:24px; text-align:center;
+    cursor:pointer; transition:border-color 0.2s; margin-bottom:6px;
+  }
+  .upload-zone:hover{border-color:var(--cyan);}
+  .upload-zone.dragover{border-color:var(--pink); background:rgba(255,62,165,0.05);}
+  .progress-bar{height:6px; background:var(--bg-alt); border-radius:3px; overflow:hidden; margin-top:10px; display:none;}
+  .progress-fill{height:100%; background:var(--pink); width:0%; transition:width 0.15s;}
+  .file-ok{color:var(--cyan); font-family:'JetBrains Mono'; font-size:11.5px; margin-top:8px;}
+  video.preview{width:100%; border-radius:6px; margin-top:10px; max-height:200px; background:#000;}
+
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--bg-card); border:1px solid var(--line);
+    border-left:3px solid var(--cyan); padding:14px 18px; border-radius:8px; font-size:13px; z-index:300;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4); display:none; max-width:320px;
+  }
+  .toast.err{border-left-color:var(--danger);}
+  .toast.show{display:block; animation:slideIn 0.25s ease;}
+  @keyframes slideIn{from{transform:translateY(10px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+
+  @media (max-width:860px){
+    #app.show{grid-template-columns:1fr;}
+    aside{position:relative; height:auto; flex-direction:row; overflow-x:auto;}
+    nav.sidenav{flex-direction:row;}
+    main{padding:22px 18px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><span class="icon">🐹</span>RATPACK <span style="color:var(--cyan)">ADMIN</span></div>
+    <h2>// Sign in to manage the platform</h2>
+    <div class="error-msg" id="loginError"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
+    </form>
+    <div class="hint">
+      Use Admin Email: <b>admin@ratpack.com</b><br>
+      Password: <b>admin123</b>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside>
+    <div class="side-logo"><span class="icon">🐹</span>RATPACK</div>
+    <nav class="sidenav">
+      <button data-page="dashboard" class="active">📊 Dashboard</button>
+      <button data-page="shows">🎬 Shows</button>
+      <button data-page="founders">👥 Founders</button>
+      <button data-page="users">🔑 Users</button>
+      <button data-page="settings">⚙️ Settings</button>
+    </nav>
+    <div class="side-foot">
+      <div class="side-user" id="sideUserInfo">—</div>
+      <button class="btn btn-ghost btn-small" style="width:100%" id="logoutBtn">Log Out</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head"><h1>Dashboard</h1></div>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="n">—</div><div class="l">Total Shows</div></div>
+        <div class="stat-card"><div class="n">—</div><div class="l">Published</div></div>
+        <div class="stat-card"><div class="n">—</div><div class="l">Episodes</div></div>
+        <div class="stat-card"><div class="n">—</div><div class="l">Users</div></div>
+      </div>
+    </section>
+
+    <!-- SHOWS -->
+    <section class="page" id="page-shows">
+      <div class="page-head">
+        <h1>Shows</h1>
+        <button class="btn btn-primary" id="addShowBtn">+ Add Show</button>
+      </div>
+      <table>
+        <thead><tr><th>Title</th><th>Genre</th><th>Status</th><th>Episodes</th><th></th></tr></thead>
+        <tbody id="showsTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- EPISODES (sub-page) -->
+    <section class="page" id="page-episodes">
+      <div class="page-head">
+        <div>
+          <button class="btn btn-ghost btn-small" id="backToShows" style="margin-bottom:12px;">← Back to Shows</button>
+          <h1 id="episodesShowTitle">Episodes</h1>
+        </div>
+        <button class="btn btn-primary" id="addEpisodeBtn">+ Add Episode</button>
+      </div>
+      <table>
+        <thead><tr><th>Title</th><th>S/E</th><th>Video</th><th>Status</th><th></th></tr></thead>
+        <tbody id="episodesTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- FOUNDERS -->
+    <section class="page" id="page-founders">
+      <div class="page-head">
+        <h1>Founders</h1>
+        <button class="btn btn-primary" id="addFounderBtn">+ Add Founder</button>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Stat</th><th>Order</th><th></th></tr></thead>
+        <tbody id="foundersTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- USERS -->
+    <section class="page" id="page-users">
+      <div class="page-head">
+        <h1>Users</h1>
+        <button class="btn btn-primary" id="addUserBtn">+ Add User</button>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <tbody id="usersTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" id="page-settings">
+      <div class="page-head"><h1>Settings</h1></div>
+      <div style="background:var(--bg-card); border:1px solid var(--line); border-radius:10px; padding:24px; max-width:420px;">
+        <h3 style="font-size:14px; margin-bottom:18px; color:var(--muted); font-family:'JetBrains Mono'; letter-spacing:0.05em;">// CHANGE PASSWORD</h3>
+        <div class="error-msg" id="pwError"></div>
+        <div class="field"><label>Current Password</label><input type="password" id="pwCurrent"></div>
+        <div class="field"><label>New Password (min 8 chars)</label><input type="password" id="pwNew"></div>
+        <button class="btn btn-primary" id="pwSubmit">Update Password</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ MODALS ============ -->
+<div class="modal-overlay" id="showModal">
+  <div class="modal">
+    <h3 id="showModalTitle">Add Show</h3>
+    <input type="hidden" id="showId">
+    <div class="field"><label>Title</label><input type="text" id="showTitle"></div>
+    <div class="grid-2">
+      <div class="field"><label>Genre</label><input type="text" id="showGenre" placeholder="Comedy, Drama..."></div>
+      <div class="field"><label>Status</label>
+        <select id="showStatus"><option value="draft">Draft</option><option value="published">Published</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Synopsis</label><textarea id="showSynopsis"></textarea></div>
+    <div class="field"><label>Accent Color</label>
+      <div class="color-row" id="showColorRow"></div>
+      <input type="hidden" id="showColor" value="#ff3ea5">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('showModal')">Cancel</button>
+      <button class="btn btn-primary" id="showSaveBtn">Save Show</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="episodeModal">
+  <div class="modal">
+    <h3 id="episodeModalTitle">Add Episode</h3>
+    <input type="hidden" id="episodeId">
+    <div class="field"><label>Title</label><input type="text" id="episodeTitle"></div>
+    <div class="grid-2">
+      <div class="field"><label>Season</label><input type="number" id="episodeSeason" value="1" min="1"></div>
+      <div class="field"><label>Episode #</label><input type="number" id="episodeNumber" value="1" min="1"></div>
+    </div>
+    <div class="field">
+      <label>Video File</label>
+      <div class="upload-zone" id="uploadZone">
+        <div id="uploadZoneText">Click to select or drag a video file (mp4, webm, mov)</div>
+        <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/quicktime" style="display:none">
+      </div>
+      <div class="progress-bar" id="uploadProgressBar"><div class="progress-fill" id="uploadProgressFill"></div></div>
+      <div class="file-ok" id="uploadStatusText"></div>
+      <video class="preview" id="videoPreview" controls style="display:none"></video>
+      <input type="hidden" id="episodeVideoUrl">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('episodeModal')">Cancel</button>
+      <button class="btn btn-primary" id="episodeSaveBtn">Save Episode</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="founderModal">
+  <div class="modal">
+    <h3 id="founderModalTitle">Add Founder</h3>
+    <input type="hidden" id="founderId">
+    <div class="field"><label>Name</label><input type="text" id="founderName"></div>
+    <div class="field"><label>Role</label><input type="text" id="founderRole"></div>
+    <div class="field"><label>Bio</label><textarea id="founderBio"></textarea></div>
+    <div class="grid-2">
+      <div class="field"><label>Stat Label</label><input type="text" id="founderStatLabel" placeholder="Since"></div>
+      <div class="field"><label>Stat Value</label><input type="text" id="founderStatValue" placeholder="Day One"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Sort Order</label><input type="number" id="founderSortOrder" value="0"></div>
+      <div class="field"><label>Color</label>
+        <div class="color-row" id="founderColorRow"></div>
+        <input type="hidden" id="founderColor" value="#4deeea">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('founderModal')">Cancel</button>
+      <button class="btn btn-primary" id="founderSaveBtn">Save Founder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <h3>Add User</h3>
+    <div class="field"><label>Name</label><input type="text" id="userName"></div>
+    <div class="field"><label>Email</label><input type="email" id="userEmail"></div>
+    <div class="field"><label>Password (min 8 chars)</label><input type="password" id="userPassword"></div>
+    <div class="field"><label>Role</label>
+      <select id="userRole"><option value="viewer">Viewer</option><option value="staff">Staff</option><option value="admin">Admin</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn-primary" id="userSaveBtn">Create User</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================================
+// Ratpack Admin — Frontend connected to your Node.js Backend
+// =========================================================================
+const API = "http://localhost:5000"; // YAHAN TERA BACKEND CONNECT HO RAHA HAI
+const COLORS = ["#ff3ea5", "#4deeea", "#f5ff3d", "#9b5de5"];
+
+let state = { token: localStorage.getItem("ratpack_token") || null, user: null, currentShowId: null };
+
+function toast(msg, isErr=false){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isErr ? " err" : "");
+  setTimeout(()=> t.className = "toast", 2600);
+}
+
+async function api(path, opts={}){
+  const headers = opts.headers || {};
+  if (state.token) headers["Authorization"] = "Bearer " + state.token;
+  if (opts.body && !(opts.body instanceof FormData)) headers["Content-Type"] = "application/json";
+  const res = await fetch(API + path, {...opts, headers});
+  let data = null;
+  try { data = await res.json(); } catch(e) { /* no body */ }
+  if (!res.ok){
+    if (res.status === 401) doLogout();
+    throw new Error((data && data.error) || ("Request failed (" + res.status + ")"));
+  }
+  return data;
+}
+
+// ---------------- AUTH ----------------
+document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = document.getElementById("loginBtn");
+  const errBox = document.getElementById("loginError");
+  errBox.style.display = "none";
+  btn.disabled = true; btn.textContent = "Signing in...";
+  try{
+    const data = await api("/api/auth/login", {
+      method:"POST",
+      body: JSON.stringify({
+        email: document.getElementById("loginEmail").value.trim(),
+        password: document.getElementById("loginPassword").value,
+      })
+    });
+    state.token = data.token; state.user = data.user;
+    localStorage.setItem("ratpack_token", data.token);
+    enterApp();
+  }catch(err){
+    errBox.textContent = err.message; errBox.style.display = "block";
+  }finally{
+    btn.disabled = false; btn.textContent = "Sign In";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", doLogout);
+function doLogout(){
+  state.token = null; state.user = null;
+  localStorage.removeItem("ratpack_token");
+  document.getElementById("app").classList.remove("show");
+  document.getElementById("loginScreen").style.display = "flex";
+}
+
+async function enterApp(){
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").classList.add("show");
+  document.getElementById("sideUserInfo").textContent = state.user ? state.user.email : "admin@ratpack.com";
+  await loadDashboard();
+  await loadShows();
+  await loadFounders(); // YAHAN FOUNDERS LOAD HOTE HAIN
+  if (state.user && state.user.role === "admin") await loadUsers(); // YAHAN USERS LOAD HOTE HAIN
+}
+
+// Try silent resume if a token is already stored
+(async function bootstrap(){
+  if (state.token){
+    try{
+      state.user = await api("/api/auth/me");
+      enterApp();
+    }catch(e){ doLogout(); }
+  }
+})();
+
+// ---------------- NAV ----------------
+document.querySelectorAll("nav.sidenav button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.sidenav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    showPage(btn.dataset.page);
+  });
+});
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+}
+
+// ---------------- DASHBOARD ----------------
+async function loadDashboard(){
+  try{
+    const s = await api("/api/dashboard/stats");
+    const grid = document.getElementById("statGrid");
+    grid.innerHTML = `
+      <div class="stat-card"><div class="n">${s.total_shows}</div><div class="l">Total Shows</div></div>
+      <div class="stat-card"><div class="n">${s.published_shows}</div><div class="l">Published</div></div>
+      <div class="stat-card"><div class="n">${s.total_episodes}</div><div class="l">Episodes</div></div>
+      <div class="stat-card"><div class="n">${s.total_users}</div><div class="l">Users</div></div>`;
+  }catch(e){ toast(e.message, true); }
+}
+
+// ---------------- SHOWS ----------------
+async function loadShows(){
+  try{
+    const shows = await api("/api/shows");
+    const tbody = document.getElementById("showsTbody");
+    if (!shows.length){ tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No shows yet. Click "+ Add Show" to create one.</td></tr>`; return; }
+    tbody.innerHTML = shows.map(s => `
+      <tr>
+        <td><b>${esc(s.title)}</b></td>
+        <td>${esc(s.genre||"—")}</td>
+        <td><span class="badge ${s.status}">${s.status}</span></td>
+        <td><button class="btn btn-ghost btn-small" onclick="openEpisodes('${s.id}', '${escAttr(s.title)}')">Manage →</button></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" onclick='editShow(${JSON.stringify(s).replace(/'/g,"&apos;")})'>✎</button>
+            <button class="icon-btn del" onclick="deleteShow('${s.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }catch(e){ toast(e.message, true); }
+}
+
+function buildColorRow(rowId, hiddenId, selected){
+  const row = document.getElementById(rowId);
+  row.innerHTML = COLORS.map(c => `<div class="swatch ${c===selected?'sel':''}" style="background:${c}" data-c="${c}"></div>`).join("");
+  row.querySelectorAll(".swatch").forEach(sw=>{
+    sw.addEventListener("click", ()=>{
+      row.querySelectorAll(".swatch").forEach(s=>s.classList.remove("sel"));
+      sw.classList.add("sel");
+      document.getElementById(hiddenId).value = sw.dataset.c;
+    });
+  });
+}
+
+document.getElementById("addShowBtn").addEventListener("click", ()=>{
+  document.getElementById("showModalTitle").textContent = "Add Show";
+  document.getElementById("showId").value = "";
+  document.getElementById("showTitle").value = "";
+  document.getElementById("showGenre").value = "";
+  document.getElementById("showStatus").value = "draft";
+  document.getElementById("showSynopsis").value = "";
+  document.getElementById("showColor").value = COLORS[0];
+  buildColorRow("showColorRow","showColor", COLORS[0]);
+  openModal("showModal");
+});
+
+function editShow(s){
+  document.getElementById("showModalTitle").textContent = "Edit Show";
+  document.getElementById("showId").value = s.id;
+  document.getElementById("showTitle").value = s.title;
+  document.getElementById("showGenre").value = s.genre || "";
+  document.getElementById("showStatus").value = s.status;
+  document.getElementById("showSynopsis").value = s.synopsis || "";
+  document.getElementById("showColor").value = s.thumb_color || COLORS[0];
+  buildColorRow("showColorRow","showColor", s.thumb_color || COLORS[0]);
+  openModal("showModal");
+}
+
+document.getElementById("showSaveBtn").addEventListener("click", async ()=>{
+  const id = document.getElementById("showId").value;
+  const payload = {
+    title: document.getElementById("showTitle").value.trim(),
+    genre: document.getElementById("showGenre").value.trim(),
+    status: document.getElementById("showStatus").value,
+    synopsis: document.getElementById("showSynopsis").value.trim(),
+    thumb_color: document.getElementById("showColor").value,
+  };
+  if (!payload.title){ toast("Title is required", true); return; }
+  try{
+    if (id) await api(`/api/shows/${id}`, {method:"PUT", body:JSON.stringify(payload)});
+    else await api("/api/shows", {method:"POST", body:JSON.stringify(payload)});
+    closeModal("showModal"); toast("Show saved"); loadShows(); loadDashboard();
+  }catch(e){ toast(e.message, true); }
+});
+
+async function deleteShow(id){
+  if (!confirm("Delete this show and all its episodes?")) return;
+  try{ await api(`/api/shows/${id}`, {method:"DELETE"}); toast("Show deleted"); loadShows(); loadDashboard(); }
+  catch(e){ toast(e.message, true); }
+}
+
+// ---------------- EPISODES ----------------
+function openEpisodes(showId, title){
+  state.currentShowId = showId;
+  document.getElementById("episodesShowTitle").textContent = "Episodes — " + title;
+  document.querySelectorAll("nav.sidenav button").forEach(b=>b.classList.remove("active"));
+  showPage("episodes");
+  loadEpisodes();
+}
+document.getElementById("backToShows").addEventListener("click", ()=>{
+  document.querySelector('nav.sidenav button[data-page="shows"]').classList.add("active");
+  showPage("shows");
+});
+
+async function loadEpisodes(){
+  try{
+    const eps = await api(`/api/shows/${state.currentShowId}/episodes`);
+    const tbody = document.getElementById("episodesTbody");
+    if (!eps.length){ tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No episodes yet. Click "+ Add Episode" and upload a video file.</td></tr>`; return; }
+    tbody.innerHTML = eps.map(ep => `
+      <tr>
+        <td><b>${esc(ep.title)}</b></td>
+        <td>S${ep.season} E${ep.ep_number}</td>
+        <td>${ep.video_url ? `<a href="${ep.video_url}" target="_blank" style="color:var(--cyan)">▶ Play</a>` : "—"}</td>
+        <td><span class="badge ${ep.status}">${ep.status}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" onclick='editEpisode(${JSON.stringify(ep).replace(/'/g,"&apos;")})'>✎</button>
+            <button class="icon-btn del" onclick="deleteEpisode('${ep.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }catch(e){ toast(e.message, true); }
+}
+
+function resetEpisodeUploadUI(){
+  document.getElementById("uploadZoneText").textContent = "Click to select or drag a video file (mp4, webm, mov)";
+  document.getElementById("uploadStatusText").textContent = "";
+  document.getElementById("uploadProgressBar").style.display = "none";
+  document.getElementById("uploadProgressFill").style.width = "0%";
+  document.getElementById("videoPreview").style.display = "none";
+  document.getElementById("videoPreview").src = "";
+  document.getElementById("episodeVideoUrl").value = "";
+}
+
+document.getElementById("addEpisodeBtn").addEventListener("click", ()=>{
+  document.getElementById("episodeModalTitle").textContent = "Add Episode";
+  document.getElementById("episodeId").value = "";
+  document.getElementById("episodeTitle").value = "";
+  document.getElementById("episodeSeason").value = 1;
+  document.getElementById("episodeNumber").value = 1;
+  resetEpisodeUploadUI();
+  openModal("episodeModal");
+});
+
+function editEpisode(ep){
+  document.getElementById("episodeModalTitle").textContent = "Edit Episode";
+  document.getElementById("episodeId").value = ep.id;
+  document.getElementById("episodeTitle").value = ep.title;
+  document.getElementById("episodeSeason").value = ep.season;
+  document.getElementById("episodeNumber").value = ep.ep_number;
+  resetEpisodeUploadUI();
+  if (ep.video_url){
+    document.getElementById("episodeVideoUrl").value = ep.video_url;
+    document.getElementById("uploadStatusText").textContent = "Current video: " + (ep.video_filename || "Uploaded");
+    const vp = document.getElementById("videoPreview");
+    vp.src = ep.video_url; vp.style.display = "block";
+  }
+  openModal("episodeModal");
+}
+
+const uploadZone = document.getElementById("uploadZone");
+const videoFileInput = document.getElementById("videoFileInput");
+uploadZone.addEventListener("click", ()=> videoFileInput.click());
+uploadZone.addEventListener("dragover", (e)=>{ e.preventDefault(); uploadZone.classList.add("dragover"); });
+uploadZone.addEventListener("dragleave", ()=> uploadZone.classList.remove("dragover"));
+uploadZone.addEventListener("drop", (e)=>{
+  e.preventDefault(); uploadZone.classList.remove("dragover");
+  if (e.dataTransfer.files.length) handleVideoFile(e.dataTransfer.files[0]);
+});
+videoFileInput.addEventListener("change", (e)=>{
+  if (e.target.files.length) handleVideoFile(e.target.files[0]);
+});
+
+function handleVideoFile(file){
+  const bar = document.getElementById("uploadProgressBar");
+  const fill = document.getElementById("uploadProgressFill");
+  const statusText = document.getElementById("uploadStatusText");
+  bar.style.display = "block"; fill.style.width = "0%";
+  statusText.textContent = "Uploading " + file.name + "...";
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", API + "/api/upload/video");
+  xhr.setRequestHeader("Authorization", "Bearer " + state.token);
+  xhr.upload.onprogress = (e)=>{
+    if (e.lengthComputable){
+      const pct = Math.round((e.loaded / e.total) * 100);
+      fill.style.width = pct + "%";
+      statusText.textContent = `Uploading ${file.name}... ${pct}%`;
+    }
+  };
+  xhr.onload = ()=>{
+    if (xhr.status >= 200 && xhr.status < 300){
+      const data = JSON.parse(xhr.responseText);
+      document.getElementById("episodeVideoUrl").value = data.url;
+      statusText.textContent = "Uploaded: " + data.filename + " (" + (data.size_bytes/1024/1024).toFixed(1) + " MB)";
+      const vp = document.getElementById("videoPreview");
+      vp.src = data.url; vp.style.display = "block";
+    } else {
+      let msg = "Upload failed";
+      try{ msg = JSON.parse(xhr.responseText).error || msg; }catch(e){}
+      statusText.textContent = msg; toast(msg, true);
+    }
+  };
+  xhr.onerror = ()=>{ statusText.textContent = "Upload failed — network error"; toast("Upload failed", true); };
+  xhr.send(form);
+}
+
+document.getElementById("episodeSaveBtn").addEventListener("click", async ()=>{
+  const id = document.getElementById("episodeId").value;
+  const payload = {
+    title: document.getElementById("episodeTitle").value.trim(),
+    season: parseInt(document.getElementById("episodeSeason").value || 1),
+    ep_number: parseInt(document.getElementById("episodeNumber").value || 1),
+    video_url: document.getElementById("episodeVideoUrl").value,
+  };
+  if (!payload.title){ toast("Title is required", true); return; }
+  try{
+    if (id) await api(`/api/episodes/${id}`, {method:"PUT", body:JSON.stringify(payload)});
+    else await api(`/api/shows/${state.currentShowId}/episodes`, {method:"POST", body:JSON.stringify(payload)});
+    closeModal("episodeModal"); toast("Episode saved"); loadEpisodes(); loadDashboard();
+  }catch(e){ toast(e.message, true); }
+});
+
+async function deleteEpisode(id){
+  if (!confirm("Delete this episode?")) return;
+  try{ await api(`/api/episodes/${id}`, {method:"DELETE"}); toast("Episode deleted"); loadEpisodes(); loadDashboard(); }
+  catch(e){ toast(e.message, true); }
+}
+
+// ---------------- FOUNDERS ----------------
+async function loadFounders(){
+  try{
+    const founders = await api("/api/founders");
+    const tbody = document.getElementById("foundersTbody");
+    if (!founders.length){ tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No founders yet.</td></tr>`; return; }
+    tbody.innerHTML = founders.map(f => `
+      <tr>
+        <td><b>${esc(f.name)}</b></td>
+        <td>${esc(f.role||"—")}</td>
+        <td>${esc(f.stat_label||"")}: ${esc(f.stat_value||"")}</td>
+        <td>${f.sort_order}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" onclick='editFounder(${JSON.stringify(f).replace(/'/g,"&apos;")})'>✎</button>
+            <button class="icon-btn del" onclick="deleteFounder('${f.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }catch(e){ toast(e.message, true); }
+}
+
+document.getElementById("addFounderBtn").addEventListener("click", ()=>{
+  document.getElementById("founderModalTitle").textContent = "Add Founder";
+  document.getElementById("founderId").value = "";
+  document.getElementById("founderName").value = "";
+  document.getElementById("founderRole").value = "";
+  document.getElementById("founderBio").value = "";
+  document.getElementById("founderStatLabel").value = "";
+  document.getElementById("founderStatValue").value = "";
+  document.getElementById("founderSortOrder").value = 0;
+  buildColorRow("founderColorRow","founderColor", COLORS[1]);
+  openModal("founderModal");
+});
+
+function editFounder(f){
+  document.getElementById("founderModalTitle").textContent = "Edit Founder";
+  document.getElementById("founderId").value = f.id;
+  document.getElementById("founderName").value = f.name;
+  document.getElementById("founderRole").value = f.role || "";
+  document.getElementById("founderBio").value = f.bio || "";
+  document.getElementById("founderStatLabel").value = f.stat_label || "";
+  document.getElementById("founderStatValue").value = f.stat_value || "";
+  document.getElementById("founderSortOrder").value = f.sort_order || 0;
+  buildColorRow("founderColorRow","founderColor", f.color || COLORS[1]);
+  openModal("founderModal");
+}
+
+document.getElementById("founderSaveBtn").addEventListener("click", async ()=>{
+  const id = document.getElementById("founderId").value;
+  const payload = {
+    name: document.getElementById("founderName").value.trim(),
+    role: document.getElementById("founderRole").value.trim(),
+    bio: document.getElementById("founderBio").value.trim(),
+    stat_label: document.getElementById("founderStatLabel").value.trim(),
+    stat_value: document.getElementById("founderStatValue").value.trim(),
+    sort_order: parseInt(document.getElementById("founderSortOrder").value || 0),
+    color: document.getElementById("founderColor").value,
+  };
+  if (!payload.name){ toast("Name is required", true); return; }
+  try{
+    if (id) await api(`/api/founders/${id}`, {method:"PUT", body:JSON.stringify(payload)});
+    else await api("/api/founders", {method:"POST", body:JSON.stringify(payload)});
+    closeModal("founderModal"); toast("Founder saved"); loadFounders();
+  }catch(e){ toast(e.message, true); }
+});
+
+async function deleteFounder(id){
+  if (!confirm("Delete this founder?")) return;
+  try{ await api(`/api/founders/${id}`, {method:"DELETE"}); toast("Founder deleted"); loadFounders(); }
+  catch(e){ toast(e.message, true); }
+}
+
+// ---------------- USERS ----------------
+async function loadUsers(){
+  try{
+    const users = await api("/api/users");
+    const tbody = document.getElementById("usersTbody");
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td><b>${esc(u.name)}</b></td>
+        <td>${esc(u.email)}</td>
+        <td><span class="badge ${u.role==='admin'?'admin':'draft'}">${u.role}</span></td>
+        <td><span class="badge ${u.status==='active'?'active':'disabled'}">${u.status}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn del" onclick="deleteUser('${u.id}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }catch(e){ toast(e.message, true); }
+}
+
+document.getElementById("addUserBtn").addEventListener("click", ()=>{
+  document.getElementById("userName").value = "";
+  document.getElementById("userEmail").value = "";
+  document.getElementById("userPassword").value = "";
+  document.getElementById("userRole").value = "viewer";
+  openModal("userModal");
+});
+
+document.getElementById("userSaveBtn").addEventListener("click", async ()=>{
+  const payload = {
+    name: document.getElementById("userName").value.trim(),
+    email: document.getElementById("userEmail").value.trim(),
+    password: document.getElementById("userPassword").value,
+    role: document.getElementById("userRole").value,
+  };
+  if (!payload.name || !payload.email || !payload.password){ toast("All fields are required", true); return; }
+  try{
+    await api("/api/users", {method:"POST", body:JSON.stringify(payload)});
+    closeModal("userModal"); toast("User created"); loadUsers(); loadDashboard();
+  }catch(e){ toast(e.message, true); }
+});
+
+async function deleteUser(id){
+  if (!confirm("Delete this user?")) return;
+  try{ await api(`/api/users/${id}`, {method:"DELETE"}); toast("User deleted"); loadUsers(); }
+  catch(e){ toast(e.message, true); }
+}
+
+// ---------------- SETTINGS ----------------
+document.getElementById("pwSubmit").addEventListener("click", async ()=>{
+  const errBox = document.getElementById("pwError");
+  errBox.style.display = "none";
+  const payload = {
+    current_password: document.getElementById("pwCurrent").value,
+    new_password: document.getElementById("pwNew").value,
+  };
+  try{
+    await api("/api/auth/change-password", {method:"POST", body:JSON.stringify(payload)});
+    toast("Password updated");
+    document.getElementById("pwCurrent").value = ""; document.getElementById("pwNew").value = "";
+  }catch(e){ errBox.textContent = e.message; errBox.style.display = "block"; }
+});
+
+// ---------------- MODAL HELPERS ----------------
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+document.querySelectorAll(".modal-overlay").forEach(ov=>{
+  ov.addEventListener("click", (e)=>{ if (e.target === ov) ov.classList.remove("show"); });
+});
+
+function esc(s){ return (s===null||s===undefined) ? "" : String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function escAttr(s){ return esc(s).replace(/"/g,"&quot;"); }
+</script>
